@@ -44,6 +44,11 @@
                     "default": "hlint",
                     "description": "Points to the hlint exectuable."
                 },
+                "haskell.hlint.useStack": {
+                    "type": "boolean",
+                    "default": false,
+                    "description": "Whether to use `stack exec` to find the executable."
+                },
                 "haskell.hlint.run": {
                     "type": "string",
                     "enum": [

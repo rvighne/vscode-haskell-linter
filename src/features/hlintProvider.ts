@@ -104,6 +104,7 @@ export default class HaskellLintingProvider implements vscode.CodeActionProvider
     private hintArgs: string[];
     private ignoreArgs: string[];
     private executable: string;
+    private useStack: boolean;
     private executableNotFound: boolean;
     private commandId: string;
     private command: vscode.Disposable;
@@ -114,6 +115,7 @@ export default class HaskellLintingProvider implements vscode.CodeActionProvider
 
     constructor() {
         this.executable = null;
+        this.useStack = false;
         this.executableNotFound = false;
         this.hintArgs = [];
         this.ignoreArgs = [];
@@ -170,6 +172,7 @@ export default class HaskellLintingProvider implements vscode.CodeActionProvider
         let oldExecutable = this.executable;
         if (section) {
             this.executable = section.get<string>('hlint.executablePath', "hlint");
+            this.useStack = section.get<boolean>('hlint.useStack', false);
             this.trigger = RunTrigger.from(section.get<string>('hlint.run', RunTrigger.strings.onType));
             this.hintArgs = section.get<string[]>('hlint.hints', []).map(arg => { return `--hint=${arg}`; });
             this.ignoreArgs = section.get<string[]>('hlint.ignore', []).map(arg => { return `--ignore=${arg}`; });
@@ -237,6 +240,11 @@ export default class HaskellLintingProvider implements vscode.CodeActionProvider
             }
             args = args.concat(this.hintArgs);
             args = args.concat(this.ignoreArgs);
+
+            if (this.useStack) {
+                args = ['exec', executable, '--'].concat(args);
+                executable = 'stack';
+            }
 
             this.logger.log(`Starting "${executable} ${args.join(' ')}"`);
             let childProcess = cp.spawn(executable, args, options);
